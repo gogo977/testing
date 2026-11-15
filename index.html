@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What’s this? What’s that? Practice</title>
+<style>
+:root{--bg:#fff8e7;--card:#ffffff;--ink:#2b2a33;--muted:#6b6878;--accent:#ff7a59;--blue:#3b82f6;--ok:#16a34a;--bad:#dc2626;--line:#f0e2bd;--chip:#fff1c9;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1b26;--card:#2a2736;--ink:#f5f2ea;--muted:#b6b2c4;--accent:#ff8f72;--blue:#6aa0ff;--ok:#4ade80;--bad:#f87171;--line:#403b52;--chip:#3a3550}}
+:root[data-theme="dark"]{--bg:#1d1b26;--card:#2a2736;--ink:#f5f2ea;--muted:#b6b2c4;--accent:#ff8f72;--blue:#6aa0ff;--ok:#4ade80;--bad:#f87171;--line:#403b52;--chip:#3a3550}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;font-size:18px;line-height:1.5}
+main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+header{text-align:center;padding:12px 0 8px}
+h1{margin:0;font-size:2rem;color:var(--accent)}
+.sub{color:var(--muted);margin:4px 0 0}
+.rule{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+.rule div{background:var(--card);border:2px dashed var(--line);border-radius:16px;padding:10px 16px;text-align:center}
+.score{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border:2px solid var(--line);border-radius:999px;padding:6px 16px;text-align:center;font-weight:700;margin:10px auto;width:max-content;max-width:100%;z-index:5}
+section{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:18px;margin:18px 0}
+h2{margin:0 0 4px;font-size:1.3rem}
+.hint{color:var(--muted);margin:0 0 12px;font-size:.95rem}
+.q{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:0}
+.q .t{flex:1 1 220px}
+.e{font-size:1.8rem}
+button{font:inherit;cursor:pointer}
+.opt{background:var(--chip);border:2px solid transparent;border-radius:12px;padding:6px 16px;color:var(--ink)}
+.opt.sel{border-color:var(--blue);background:var(--blue);color:#fff}
+.opt.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.opt.bad{background:var(--bad);color:#fff;border-color:var(--bad)}
+.check{margin-top:12px;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:8px 22px;font-weight:700}
+.reset{background:transparent;color:var(--muted);border:2px solid var(--line);margin-left:8px}
+.fb{margin-top:10px;font-weight:700}
+input[type=text],textarea{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:6px 10px;width:100%}
+input.ok{border-color:var(--ok)}input.bad{border-color:var(--bad)}
+.row{display:grid;grid-template-columns:48px 1fr 1fr;gap:8px;align-items:center;padding:6px 0}
+.row .w{grid-column:1/-1;color:var(--muted);font-size:.85rem;margin-bottom:-4px}
+.line{min-height:48px;border:2px dashed var(--line);border-radius:12px;padding:6px;display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.bank{display:flex;gap:6px;flex-wrap:wrap;min-height:44px;margin-bottom:6px}
+.tile{background:var(--chip);border:2px solid var(--line);border-radius:10px;padding:4px 14px;color:var(--ink)}
+.u{padding:10px 0;border-top:1px solid var(--line)}
+.u:first-of-type{border-top:0}
+.dlg p{margin:6px 0}
+.dlg input{display:inline-block;width:min(260px,100%)}
+.teach summary{cursor:pointer;font-weight:700}.teach details{border-top:1px solid var(--line);padding:8px 0}.teach table{width:100%;border-collapse:collapse;font-size:.9rem}.teach td{padding:2px 6px;border-bottom:1px solid var(--line);vertical-align:top}.pt{font-weight:700;margin:8px 0 2px;color:var(--accent)}
+.ans{color:var(--ok);font-weight:700;font-size:.9rem}
+footer{text-align:center;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>🔍 What’s this? What’s that?</h1>
+<p class="sub">Grade 4 · English writing practice</p>
+</header>
+<div class="rule"><div><b>this</b> = near me 👇<br>What’s this?</div><div><b>that</b> = far from me 👉<br>What’s that?</div><div>Answer: <b>It’s a / an …</b></div></div>
+<div class="score" id="score">⭐ Score: 0</div>
+<div id="app"></div>
+<footer>Touch a near thing for “this.” Point to a far thing for “that.” 😊</footer>
+</main>
+<script>
+var A=document.getElementById("app"),scores={},collect={};
+function upd(){var t=0;for(var k in scores)t+=scores[k];document.getElementById("score").textContent="⭐ Score: "+t}
+function el(h){var d=document.createElement("div");d.innerHTML=h;return d.firstElementChild}
+function norm(s){return s.toLowerCase().replace(/['‘`]/g,"’").replace(/\s+/g," ").trim()}
+function sec(title,hint){var s=el('<section><h2></h2><p class="hint"></p></section>');s.querySelector("h2").textContent=title;s.querySelector(".hint").textContent=hint;A.appendChild(s);return s}
+function addBtns(s,onCheck,onReset){var b=el('<div><button class="check">Check ✓</button><button class="check reset">Try again</button><div class="fb"></div></div>');s.appendChild(b);b.children[0].onclick=onCheck;b.children[1].onclick=onReset;return b.querySelector(".fb")}
+
+function choice(id,title,hint,items,opts){
+ var s=sec(title,hint),sel=[];
+ collect[id]=function(){return items.map(function(it,i){return {q:it.q,a:sel[i]||"",ok:sel[i]===it.a}})};
+ var rows=items.map(function(it,i){
+  var q=el('<div class="q"><span class="e"></span><span class="t"></span><span class="o"></span></div>');
+  q.querySelector(".e").textContent=it.e;q.querySelector(".t").textContent=it.q;
+  var bs=opts.map(function(o){var b=el('<button class="opt"></button>');b.textContent=o;b.onclick=function(){sel[i]=o;bs.forEach(function(x){x.className="opt"});b.className="opt sel"};q.querySelector(".o").appendChild(b);return b});
+  s.appendChild(q);return bs});
+ var fb=addBtns(s,function(){var n=0;rows.forEach(function(bs,i){bs.forEach(function(b){b.className="opt";if(b.textContent===items[i].a)b.className="opt ok";else if(sel[i]===b.textContent)b.className="opt bad"});if(sel[i]===items[i].a)n++});scores[id]=n;fb.textContent=n===items.length?"🎉 Perfect! "+n+"/"+items.length:"You got "+n+"/"+items.length+". Green = correct answer.";upd()},
+ function(){sel=[];rows.forEach(function(bs){bs.forEach(function(b){b.className="opt"})});fb.textContent="";scores[id]=0;upd()});
+}
+
+choice("p1","Part 1 · Near or far?","Circle the correct word: this or that.",[
+ {e:"✏️",q:"The pencil is in your hand. What’s ___?",a:"this"},
+ {e:"🚌",q:"The bus is across the room. What’s ___?",a:"that"},
+ {e:"📖",q:"The book is on your desk. What’s ___?",a:"this"},
+ {e:"🐦",q:"The bird is on a far roof. What’s ___?",a:"that"},
+ {e:"🎒",q:"The bag is next to you. What’s ___?",a:"this"}],["this","that"]);
+
+choice("p2","Part 2 · Fill in the blanks","A asks. Choose this or that.",[
+ {e:"🍎",q:"A: What’s ___? (holding an apple)  B: It’s an apple.",a:"this"},
+ {e:"🌳",q:"A: What’s ___? (a tree far away)  B: It’s a tree.",a:"that"},
+ {e:"🎒",q:"A: What’s ___? (a bag on your chair)  B: It’s a bag.",a:"this"},
+ {e:"🐱",q:"A: What’s ___? (a cat on a far wall)  B: It’s a cat.",a:"that"}],["this","that"]);
+
+choice("p3","Part 3 · a or an?","Use an before a, e, i, o, u sounds.",[
+ {e:"🥚",q:"It’s ___ egg.",a:"an"},{e:"📏",q:"It’s ___ ruler.",a:"a"},{e:"🍊",q:"It’s ___ orange.",a:"an"},
+ {e:"☂️",q:"It’s ___ umbrella.",a:"an"},{e:"✏️",q:"It’s ___ pencil.",a:"a"},{e:"🐘",q:"It’s ___ elephant.",a:"an"}],["a","an"]);
+
+(function(){
+ var items=[["this","What’s","?"],["that","What’s","?"],["a","It’s","book","."],["kite","a","It’s","."],["an","It’s","eraser","."]],
+ ans=["What’s this?","What’s that?","It’s a book.","It’s a kite.","It’s an eraser."];
+ var s=sec("Part 4 · Unscramble","Tap the words in order. Add the punctuation too!"),st=[];
+ var us=items.map(function(w,i){
+  var u=el('<div class="u"><div class="line"></div><div class="bank"></div></div>');s.appendChild(u);
+  var o={line:u.children[0],bank:u.children[1],picked:[],tiles:[]};
+  w.forEach(function(t,j){var b=el('<button class="tile"></button>');b.textContent=t;b.onclick=function(){
+   var inLine=o.picked.indexOf(j)>-1;if(inLine){o.picked.splice(o.picked.indexOf(j),1)}else o.picked.push(j);draw(o)};o.tiles.push(b)});
+  o.w=w;draw(o);return o});
+ function draw(o){o.line.innerHTML="";o.bank.innerHTML="";o.line.style.borderColor="";
+  o.picked.forEach(function(j){o.line.appendChild(o.tiles[j])});
+  o.tiles.forEach(function(b,j){if(o.picked.indexOf(j)<0)o.bank.appendChild(b)})}
+ function val(o){return o.picked.map(function(j){return o.w[j]}).join(" ").replace(/ ([?.])/g,"$1")}
+ collect.p4=function(){return us.map(function(o,i){return {q:"Unscramble: "+o.w.join(" / "),a:val(o),ok:val(o)===ans[i]}})};
+ var fb=addBtns(s,function(){var n=0;us.forEach(function(o,i){var ok=val(o)===ans[i];if(ok)n++;o.line.style.borderColor=ok?"var(--ok)":"var(--bad)"});scores.p4=n;fb.textContent=n===5?"🎉 Perfect! 5/5":"You got "+n+"/5. Try the red ones again.";upd()},
+ function(){us.forEach(function(o){o.picked=[];draw(o)});fb.textContent="";scores.p4=0;upd()});
+})();
+
+(function(){
+ var items=[["🏫","far away","school"],["📕","on your desk","book"],["✈️","far away in the sky","airplane"],["🍌","in your hand","banana"],["🐶","far away in the park","dog"]];
+ var s=sec("Part 5 · Look and write","Write the question and the answer. Example: 🖍️ in your hand → What’s this? It’s a crayon."),rows=[];
+ items.forEach(function(it){
+  var near=it[1].indexOf("far")<0,an=/^[aeiou]/.test(it[2]);
+  var r=el('<div class="row"><div class="w"></div><span class="e"></span><input type="text" placeholder="Question" autocomplete="off"><input type="text" placeholder="Answer" autocomplete="off"></div>');
+  r.querySelector(".w").textContent=it[1];r.querySelector(".e").textContent=it[0];
+  var ins=r.querySelectorAll("input");
+  s.appendChild(r);rows.push({ins:ins,q:"what’s "+(near?"this":"that")+"?",a:"it’s "+(an?"an ":"a ")+it[2]+".",show:"What’s "+(near?"this":"that")+"? It’s "+(an?"an ":"a ")+it[2]+"."})});
+ var fb=addBtns(s,function(){var n=0;rows.forEach(function(r){var a=norm(r.ins[0].value)===r.q,b=norm(r.ins[1].value)===r.a;r.ins[0].className=a?"ok":"bad";r.ins[1].className=b?"ok":"bad";if(a)n++;if(b)n++});scores.p5=n;fb.textContent=n+"/10 correct. Remember capital letters and ? or . 🙂";upd()},
+ function(){rows.forEach(function(r){r.ins.forEach?0:0;r.ins[0].value="";r.ins[1].value="";r.ins[0].className="";r.ins[1].className=""});fb.textContent="";scores.p5=0;upd()});
+ collect.p5=function(){return rows.map(function(r){return {q:"Expected: "+r.show,a:r.ins[0].value+" | "+r.ins[1].value,ok:norm(r.ins[0].value)===r.q&&norm(r.ins[1].value)===r.a}})};
+ var tip=el('<p class="ans"></p>');tip.textContent="Stuck? Tap “Check” first, then try again.";s.appendChild(tip);
+})();
+
+(function(){
+ var s=sec("Part 6 · Mini dialogue","Complete the conversation with a partner. Then read it aloud!");
+ var d=el('<div class="dlg"><p><b>A:</b> Hi, Mina!</p><p><b>B:</b> Hi, Tom!</p><p><b>A:</b> What’s <input type="text"> ? <small>(a thing near you)</small></p><p><b>B:</b> It’s <input type="text"> .</p><p><b>A:</b> And what’s <input type="text"> ? <small>(a thing far away)</small></p><p><b>B:</b> It’s <input type="text"> .</p><p><b>A:</b> Thank you!</p></div>');
+ s.appendChild(d);
+ collect.p6=function(){return Array.prototype.map.call(d.querySelectorAll("input"),function(x,i){return {q:"Blank "+(i+1),a:x.value}})};
+})();
+
+(function(){
+ var s=sec("Part 7 · My own sentences ⭐","Look around your classroom. Write 2 questions and 2 answers.");
+ for(var i=1;i<=2;i++){var q=el('<div class="u"><input type="text" placeholder="Question"><br><input type="text" placeholder="Answer" style="margin-top:6px"></div>');s.appendChild(q)}
+ collect.p7=function(){return Array.prototype.map.call(s.querySelectorAll("input"),function(x,i){return {q:(i%2?"Answer ":"Question ")+(Math.floor(i/2)+1),a:x.value}})};
+ var n=el('<p class="hint">Check: capital letter ✔ ? or . ✔ this/that ✔ a/an ✔</p>');s.appendChild(n);
+})();
+
+var NAMES={p1:"Part 1",p2:"Part 2",p3:"Part 3",p4:"Part 4",p5:"Part 5",p6:"Part 6",p7:"Part 7"};
+function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
+function dec(s){return JSON.parse(decodeURIComponent(escape(atob(s.replace(/\s+/g,"")))))}
+(function(){
+ var s=sec("Send to teacher 📨","Write your name, press the button, then send the code to your teacher.");
+ var box=el('<div><input type="text" placeholder="Your name" autocomplete="off"><button class="check">Make my code ✉️</button><textarea rows="4" readonly style="display:none;margin-top:10px"></textarea><button class="check" style="display:none">Copy code 📋</button><div class="fb"></div></div>');
+ s.appendChild(box);
+ var nm=box.querySelector("input"),ta=box.querySelector("textarea"),bt=box.querySelectorAll("button"),fb=box.querySelector(".fb");
+ bt[0].onclick=function(){
+  var name=nm.value.trim();if(!name){fb.textContent="Please write your name first.";return}
+  var k,t=0,p={};for(k in scores)t+=scores[k];
+  for(k in collect)p[k]=collect[k]().map(function(x){return [x.a,("ok" in x)?(x.ok?1:0):2]});
+  ta.value=enc({n:name,s:t,d:Date.now(),p:p});ta.style.display="block";bt[1].style.display="inline-block";
+  fb.textContent="✅ Done! Copy the code and send it to your teacher."};
+ bt[1].onclick=function(){ta.select();try{navigator.clipboard.writeText(ta.value).then(function(){fb.textContent="📋 Copied! Now send it to your teacher."},function(){document.execCommand("copy");fb.textContent="📋 Copied!"})}catch(e){try{document.execCommand("copy")}catch(_){}fb.textContent="Select the code and copy it."}};
+})();
+(function(){
+ var s=sec("👩‍🏫 Teacher backstage","Paste the students’ codes here, one per line, to see their answers.");
+ var box=el('<div class="teach"><textarea rows="5" placeholder="Paste student codes here (one per line)"></textarea><button class="check">Show answers</button><button class="check reset" style="display:none">Download CSV ⬇️</button><div class="fb"></div><div class="out"></div></div>');
+ s.appendChild(box);
+ var ta=box.querySelector("textarea"),out=box.querySelector(".out"),bs=box.querySelectorAll("button"),dfb=box.querySelector(".fb"),cur=[];
+ bs[1].onclick=async function(){
+  var dl=window.claude?await claude.use("downloads"):null;
+  if(!dl){dfb.textContent="Download is not available here. Copy the answers from the screen instead.";return}
+  function q(v){return '"'+String(v).replace(/"/g,'""')+'"'}
+  var rows=[["Student","Score","Part","Question","Answer","Result"]];
+  cur.forEach(function(r){Object.keys(r.p).sort().forEach(function(k){var qs=collect[k]?collect[k]():[];r.p[k].forEach(function(x,i){rows.push([r.n,r.s,NAMES[k]||k,qs[i]?qs[i].q:"",x[0],x[1]===2?"free writing":(x[1]?"correct":"wrong")])})})});
+  try{await dl.save({filename:"this-that-results.csv",data:"\ufeff"+rows.map(function(r){return r.map(q).join(",")}).join("\r\n")});dfb.textContent="Saved ✅"}catch(e){dfb.textContent="Not saved."}
+ };
+ bs[0].onclick=function(){
+  out.textContent="";dfb.textContent="";bs[1].style.display="none";
+  var rs=[],bad=0;
+  ta.value.split(/\n+/).filter(function(l){return l.trim()}).forEach(function(l){try{var r=dec(l);if(r&&r.p)rs.push(r);else bad++}catch(e){bad++}});
+  if(bad){var w=document.createElement("p");w.className="hint";w.textContent="⚠️ "+bad+" line(s) could not be read. Check that the whole code was copied.";out.appendChild(w)}
+  if(!rs.length&&!bad){out.textContent="Paste at least one code first.";return}
+  cur=rs;if(rs.length)bs[1].style.display="inline-block";
+  rs.sort(function(a,b){return String(a.n).localeCompare(String(b.n))});
+  var sum=document.createElement("p");sum.style.fontWeight="700";sum.textContent="Students: "+rs.length;out.appendChild(sum);
+  rs.forEach(function(r){
+   var d=document.createElement("details"),sm=document.createElement("summary");
+   sm.textContent=r.n+" · ⭐ "+r.s+" · "+new Date(r.d).toLocaleString();d.appendChild(sm);
+   Object.keys(r.p).sort().forEach(function(k){
+    var h=document.createElement("div");h.className="pt";h.textContent=NAMES[k]||k;d.appendChild(h);
+    var qs=collect[k]?collect[k]():[],tb=document.createElement("table");
+    r.p[k].forEach(function(x,i){var tr=document.createElement("tr"),m=x[1]===2?"✏️":(x[1]?"✅":"❌");
+     [m,qs[i]?qs[i].q:"",x[0]||"—"].forEach(function(c){var td=document.createElement("td");td.textContent=c;tr.appendChild(td)});tb.appendChild(tr)});
+    var w=document.createElement("div");w.style.overflowX="auto";w.appendChild(tb);d.appendChild(w)});
+   out.appendChild(d)});
+ };
+})();
+</script>
+</body>
+</html>
